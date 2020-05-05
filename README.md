@@ -169,6 +169,15 @@ When a user _"paints a pixel"_ a `Paint` record is created to associate the `Use
 ```
 BITFIELD SET "pixelPlace" (x + 1000*y) color
 ``` 
+
+
+## API Endpoints
+```
+
+```
+
+
+
 ###########################
 
 TODO:
@@ -177,7 +186,7 @@ Server:
 
 - decide whether this can be done without cassandra -> (yes)
 
-- add POST /api/paint endpoint
+- add POST /api/paint/:x/:y endpoint 
 - add GET /api/pixel endpoint
 
 - add color field to Pixel model

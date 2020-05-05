@@ -2,8 +2,6 @@ class Pixel < ApplicationRecord
     has_many :paints
     has_many :users, through: :paints
 
-
-
     scope :by_x, -> (min, max) { min && max ? where('x >= :min AND x <= :max', min: min, max: max) : all }
     scope :by_y, -> (min, max) { min && max ? where('y >= :min AND y <= :max', min: min, max: max) : all }
 
