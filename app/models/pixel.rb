@@ -10,8 +10,11 @@ class Pixel < ApplicationRecord
         by_x(min_x, max_x)
     end
 
+    def last_paint
+        self.paints.last
+    end
     def color
         # get the last color added
-        self.paints.last.color
+        last_paint.color
     end
 end
