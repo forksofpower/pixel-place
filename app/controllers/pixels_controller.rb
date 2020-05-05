@@ -1,2 +1,3 @@
 class PixelsController < ApplicationController
+    
 end
