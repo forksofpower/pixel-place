@@ -26,8 +26,8 @@ ActiveRecord::Schema.define(version: 2020_05_05_052634) do
   end
 
   create_table "pixels", force: :cascade do |t|
-    t.string "x"
-    t.string "y"
+    t.bigint "x"
+    t.bigint "y"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end

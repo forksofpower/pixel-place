@@ -133,7 +133,7 @@ user = User.create({
 })
 
 # generate random paints
-points = Array.new(10) do
+points = Array.new(10000) do
     [rand(-100..100), rand(-100..100)]
 end
 
@@ -150,5 +150,37 @@ end
 rails db:seed
 ```
 
+## Pause and check our methodology
+As I've been writing this code, I've started to suspect that my current implementation is going to cause major performance problems in the very near future.
+I want to be able to resolve the current state of the map, but a query to get the last color of each 
+If you run `rails c` and then `Pixel.all.map {|p| p.color}`, the command will take a few seconds to run, and that's with only 1/10th of the amount of pixels needed to fill a 1000x1000 grid.
+
+So I have a couple options:
+
+1. Reduce the size of the Pixel grid to something that produces a reasonable request time.
+2. Blatantly copy the reddit dev team's [post on how they build r/place](https://redditblog.com/2017/04/13/how-we-built-rplace/)
+
+Option two it is! Rather than using a relational database to map out the individual pixels into an image, we're going to keep a representation of the state of the pixels by storing it as a [bitfield](https://redis.io/commands/bitfield).
+
+When a user loads the app, the entire BITFIELD value will be served via a cached api with a very short
+
+When a user _"paints a pixel"_ a `Paint` record is created to associate the `User` and color. This the color is encoded and then placed at an offset.  
+
+```
+BITFIELD SET "pixelPlace" (x, 1000*y) color
+``` 
+###########################
+
+TODO:
+- decide whether this can be done without cassandra
+- install redis
+
+
+
+### _A few lingering questions_:
+- Is postgresql + ActiveRecord an acceptable alternative to store Pixel data or does Cassandra offer some sort of performance gain in using `(x,y)` as the key?
+- Figure out simple caching of some sort to relieve strain on initial download.
+
 ## Show me the pixels!
+Not so fast buddy.
 

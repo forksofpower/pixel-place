@@ -21,7 +21,7 @@ user = User.create({
 })
 
 # generate random paints
-points = Array.new(10) do
+points = Array.new(10000) do
     [rand(-100..100), rand(-100..100)]
 end
 

@@ -1,8 +1,8 @@
 class CreatePixels < ActiveRecord::Migration[6.0]
   def change
     create_table :pixels do |t|
-      t.string :x
-      t.string :y
+      t.bigint :x
+      t.bigint :y
 
       t.timestamps
     end
