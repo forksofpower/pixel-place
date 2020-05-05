@@ -152,7 +152,7 @@ rails db:seed
 
 ## Pause and check our methodology
 As I've been writing this code, I've started to suspect that my current implementation is going to cause major performance problems in the very near future.
-I want to be able to resolve the current state of the map, but a query to get the last color of each 
+I want to be able to resolve the current state of the map, but a query to get the last painted color of each pixel could take a very long time.
 If you run `rails c` and then `Pixel.all.map {|p| p.color}`, the command will take a few seconds to run, and that's with only 1/10th of the amount of pixels needed to fill a 1000x1000 grid.
 
 So I have a couple options:
@@ -162,18 +162,44 @@ So I have a couple options:
 
 Option two it is! Rather than using a relational database to map out the individual pixels into an image, we're going to keep a representation of the state of the pixels by storing it as a [bitfield](https://redis.io/commands/bitfield).
 
-When a user loads the app, the entire BITFIELD value will be served via a cached api with a very short
+When a user loads the app, the entire BITFIELD value will be served via a cached api with a very short expiration time. The bitmap will be loaded using `HTML Canvas#loadImageData()`. Websocket updates for pixels will be recorded and applied once the full image is loaded and displayed.  
 
 When a user _"paints a pixel"_ a `Paint` record is created to associate the `User` and color. This the color is encoded and then placed at an offset.  
 
 ```
-BITFIELD SET "pixelPlace" (x, 1000*y) color
+BITFIELD SET "pixelPlace" (x + 1000*y) color
 ``` 
 ###########################
 
 TODO:
-- decide whether this can be done without cassandra
+
+Server:
+
+- decide whether this can be done without cassandra -> (yes)
+
+- add POST /api/paint endpoint
+- add GET /api/pixel endpoint
+
+- add color field to Pixel model
 - install redis
+- on app start, check for and generate BITFIELD representation of Pixels
+- on Pixel change, update BITFIELD with color and offset
+
+- setup websockets with ActionCable
+- broadcast pixel update on Paint
+
+- cache /api/bitmap with 1 sec expiry
+- on cache hit, serve bitmap
+- on cache miss, request BITFIELD from Redis
+
+
+Client:
+
+- add Canvas
+- load bitmap image data from api endpoint
+- handle pan and zoom
+- subscribe to pixel updates via websocket
+- color picker
 
 
 
