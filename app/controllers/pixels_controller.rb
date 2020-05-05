@@ -1,0 +1,2 @@
+class PixelsController < ApplicationController
+end
