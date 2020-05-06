@@ -273,16 +273,19 @@ Server:
 - [x] add GET /api/pixel endpoint
 
 - [x] ~~add color field to Pixel model~~
-- [ ] install redis
+- [x] install redis
+- [x] create bitmap in redis and use BITFIELD to access the key with an offset
+- [x] on seed, generate a blank Bitmap
 - [ ] on app start, check for and generate BITFIELD representation of Pixels
-- [ ] on Pixel change, update BITFIELD with color and offset
+- [x] on Pixel change, update BITFIELD with color and offset
 
 - [ ] setup websockets with ActionCable
 - [ ] broadcast pixel update on Paint
 
-- [ ] cache /api/bitmap with 1 sec expiry
-- [ ] on cache hit, serve bitmap
-- [ ] on cache miss, request BITFIELD from Redis
+- [x] cache /api/bitmap with 1 sec expiry
+- [x] ~~on cache hit, serve bitmap~~
+- [ ] ~~on cache miss, request BITFIELD from Redis~~
+- [x] Don't iterate in with Ruby + Redis unless you have to. Batch commands, use the queue command, and commit often.
 
 
 Client:
