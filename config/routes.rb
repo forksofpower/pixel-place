@@ -1,10 +1,12 @@
 Rails.application.routes.draw do
 
-  resources :paints
+  # resources :paints
   post 'paints/:x/:y', to: "paints#create"
 
-  resources :pixels
+  # resources :pixels
   get 'pixels/:x/:y', to: "pixels#show"
+
+  get 'bitmap', to: 'bitmap#show'
 
   resources :users
   root "place#index"

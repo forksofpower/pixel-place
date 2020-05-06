@@ -172,43 +172,126 @@ BITFIELD SET "pixelPlace" (x + 1000*y) color
 
 
 ## API Endpoints
+Setup two endpoints to Painting Pixels and getting data on a single Pixel.
+```ruby
+# config/routes.rb
+  resources :paints
+  post 'paints/:x/:y', to: "paints#create"
+
+  resources :pixels
+  get 'pixels/:x/:y', to: "pixels#show"
+```
+```ruby
+# app/controllers/pixels_controller.rb
+class PixelsController < ApplicationController
+    skip_before_action :verify_authenticity_token
+    before_action :find_by_coordinates, only: [:show]
+
+    def show
+        # build up the response we want
+        # kinda hacky but it works for now as we're not focusing on serialization for now
+        pixel = @pixel.as_json(
+            :except => [:updated_at]
+        )
+        pixel["color"] = @pixel.color
+
+        pixel["paint"] = @pixel.last_paint.as_json(
+            :include => {
+                :user => {:only => [:username, :id]},
+            },
+            :except => [:id, :updated_at, :pixel_id, :user_id]
+        )
+
+        render json: pixel.to_json
+    end
+
+    private
+        def find_by_coordinates
+            x, y = params[:x], params[:y]
+            @pixel = Pixel.find_by(x: x, y: y)
+        end
+end
 ```
 
+```ruby
+class PaintsController < ApplicationController
+    skip_before_action :verify_authenticity_token
+
+    def create
+        # check if user Painted within cooldown period
+        now = DateTime.now.utc
+        last_paint = Paint.where(user: User.find(1)).last
+
+        if last_paint && ( now.to_i - last_paint.created_at.to_i >= 5)
+            color = paint_params[:color]
+            x, y = params[:x], params[:y]
+            @paint = Paint.create({
+                color: color,
+                user: User.find(1),
+
+                pixel: Pixel.where(x: x, y: y).first_or_create
+            })
+            
+            render json: @paint.to_json(
+                :include => {
+                    :user => {:only => [:username]},
+                    :pixel => {:only => [:x, :y]}
+                }, 
+                :except => [:updated_at]
+            )
+        else
+            render json: { errors: ["Wait your turn!"] }
+        end
+    end
+
+    private
+        def paint_params
+            params.require(:paint).permit(:x, :y, :color)
+        end
+end
+
 ```
 
+## Install and Configure Redis
+We will be using a Redis `BITFIELD` to store our pixel data in binary format. `BITFIELD` affords us the ability to get the all the data in binary format, and address it with only an offset. We can easily calculate an offset with `(x + 1000*y)`.
 
-
-###########################
+Install Redis and the redis gem. [I'm using this tutorial](https://medium.com/@petehouston/install-and-config-redis-on-mac-os-x-via-homebrew-eb8df9a4f298)
+```shell
+# Mac
+brew install redis
+# Linux
+sudo apt-get install redis
+```
 
 TODO:
 
 Server:
 
-- decide whether this can be done without cassandra -> (yes)
+- [x] decide whether this can be done without cassandra -> (yes)
 
-- add POST /api/paint/:x/:y endpoint 
-- add GET /api/pixel endpoint
+- [x] add POST /api/paint/:x/:y endpoint 
+- [x] add GET /api/pixel endpoint
 
-- add color field to Pixel model
-- install redis
-- on app start, check for and generate BITFIELD representation of Pixels
-- on Pixel change, update BITFIELD with color and offset
+- [x] ~~add color field to Pixel model~~
+- [ ] install redis
+- [ ] on app start, check for and generate BITFIELD representation of Pixels
+- [ ] on Pixel change, update BITFIELD with color and offset
 
-- setup websockets with ActionCable
-- broadcast pixel update on Paint
+- [ ] setup websockets with ActionCable
+- [ ] broadcast pixel update on Paint
 
-- cache /api/bitmap with 1 sec expiry
-- on cache hit, serve bitmap
-- on cache miss, request BITFIELD from Redis
+- [ ] cache /api/bitmap with 1 sec expiry
+- [ ] on cache hit, serve bitmap
+- [ ] on cache miss, request BITFIELD from Redis
 
 
 Client:
 
-- add Canvas
-- load bitmap image data from api endpoint
-- handle pan and zoom
-- subscribe to pixel updates via websocket
-- color picker
+- [ ] add Canvas
+- [ ] load bitmap image data from api endpoint
+- [ ] handle pan and zoom
+- [ ] subscribe to pixel updates via websocket
+- [ ] color picker
 
 
 

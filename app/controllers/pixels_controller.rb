@@ -1,6 +1,7 @@
 class PixelsController < ApplicationController
     skip_before_action :verify_authenticity_token
     before_action :find_by_coordinates, only: [:show]
+    
     def show
         # kinda hacky but it works for now
         pixel = @pixel.as_json(

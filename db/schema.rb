@@ -10,10 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_05_05_052634) do
+ActiveRecord::Schema.define(version: 2020_05_06_071821) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "bitmaps", force: :cascade do |t|
+    t.integer "width"
+    t.integer "height"
+    t.string "byte_width"
+    t.string "background_color"
+    t.string "name"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
 
   create_table "paints", force: :cascade do |t|
     t.bigint "user_id", null: false
