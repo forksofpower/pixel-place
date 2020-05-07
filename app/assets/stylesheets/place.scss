@@ -1,3 +1,27 @@
-// Place all the styles related to the place controller here.
-// They will automatically be included in application.css.
-// You can use Sass (SCSS) here: https://sass-lang.com/
+html,
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+#place-inner {
+    transform: scale(10, 10); // zoom
+    transform-origin: top left;
+    display: inline-block;
+    position: relative;
+}
+
+#place-outer {
+    transform: translate(-2500px, -2500px);
+}
+
+#place-canvas {
+    // force disable image smoothing
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    // same size as pixels so the border scales with the image
+    border: solid 1px white;
+    // this fits the canvas to the parent element
+    display: block;
+}

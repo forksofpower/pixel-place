@@ -20,12 +20,14 @@ class Place
 
     def self.set_pixel_color(x:, y:, color:)
         bitmap = Bitmap.last
-        
+
         return false if !bitmap
         # connect to redis
         redis = Redis.new
 
         offset = (x + (bitmap.height * y))
+        # color is a number 0-15
+        # redis.bitfield('place', 'SET', 'u4', offset, color)
         redis.bitfield(
             bitmap.name,
             'SET',
@@ -54,9 +56,10 @@ class Place
                     @BIT_WIDTH,
                     # (x + width * y)
                     "##{(x + (@BITMAP_HEIGHT * y))}",
-                    @BACKGROUND_COLOR
+                    # @BACKGROUND_COLOR
+                    rand(0..15)
                     # create some fancy stripes to test
-                    # (y % 2 === 0) ? rand(0..255) : @BACKGROUND_COLOR
+                    # (y % 10 === 0) ? @BACKGROUND_COLOR : rand(0..15)
                 )
                 # commit more often to avoid memory issues
                 redis.commit if y % 10 === 0
