@@ -25,9 +25,12 @@ const COLORS = [
 // document.onkeydown = handleKeyPress;
 window.addEventListener('keydown', handleKeyDown);
 window.addEventListener('keyup', handleKeyUp);
+window.addEventListener('wheel', handleScrollWheel);
 
 const ZOOM_MAX = 40;
 const ZOOM_MIN = 5;
+const ZOOM_SPEED = 0.5
+
 const center    = { x: 0, y: 0 }
 
 let zoom      = 10;
@@ -66,6 +69,13 @@ const getPlaceData = async () => {
 }
 
 // Movement functions
+function handleScrollWheel(e) {
+    // e.preventDefault();
+    let deltaY = e.deltaY;
+    console.log(e.deltaY);
+    if (deltaY > 0) zoomOut(ZOOM_SPEED);
+    else if(deltaY < 0) zoomIn(ZOOM_SPEED);
+}
 function handleKeyDown(e) {
     e.preventDefault();
     // check type of keypress for ←↑→↓
@@ -109,24 +119,22 @@ function handleKeyUp(e) {
 
 
 
-function zoomIn(d=1) {
+function zoomIn(delta=1) {
     if (zoom < ZOOM_MAX && zoom >= ZOOM_MIN) {
-        let el = document.getElementById('place-inner');
-        zoom += d;
-        el.style.transform = `scale(${zoom}, ${zoom})`
+        setZoom(zoom + delta);
     }
 }
 
-function zoomOut(d=1) {
+function zoomOut(delta=1) {
     if (zoom <= ZOOM_MAX && zoom > ZOOM_MIN) {
-        zoom -= d;
-        setZoom(zoom);
+        setZoom(zoom - delta);
     }
 }
 
 function setZoom(z) {
     let el = document.getElementById('place-inner');
-    el.style.transform = `scale(${zoom}, ${zoom})`
+    zoom = z
+    el.style.transform = `scale(${z}, ${z})`
 }
 
 // BITWISE FUNCTIONS
@@ -196,10 +204,11 @@ function toBytesInt32 (num) {
 
     container.appendChild(c);
 
+    //
     let t = document.getElementById('place-canvas');
     let data = await getPlaceData();
 
-    
+    // display image on canvas
     let ctx = t.getContext("2d");
     disableSmoothing(ctx);
     ctx.putImageData(new ImageData(data, 1000, 1000), 0, 0);
@@ -225,9 +234,15 @@ function moveImage() {
         let ySpeed = motionVector[1] * motionSpeed;
         let zoomRatio = ZOOM_MAX / zoom;
 
-        xOffset += zoomRatio * xSpeed;
-        yOffset += zoomRatio * ySpeed;
+        let xDelta = zoomRatio * xSpeed;
+        let yDelta = zoomRatio * ySpeed;
 
+        console.log(xOffset, Math.abs(xDelta));
+        if (xOffset <= (0 - xDelta + 100)) xOffset += xDelta;
+        if (yOffset <= (0 - yDelta + 100)) yOffset += yDelta;
+
+        // if (xOffset <= (0 - xDelta) && xOffset > (-5000 + window.innerWidth + Math.abs(xDelta)) ) xOffset += xDelta;
+        // if (yOffset <= (0 - yDelta) && yOffset > (-5000 + window.innerHeight + Math.abs(yDelta)) ) yOffset += yDelta;
         e.style.transform = `translate(${xOffset}px, ${yOffset}px)`
     }
 }
@@ -237,7 +252,7 @@ function runLoop(e) {
         // check for changed data and redraw if necessary
         // if no updates, dont redraw
         moveImage();
-        window.setTimeout(window.requestAnimationFrame(loop), 100);
+        window.setTimeout(window.requestAnimationFrame(loop), 30);
     }
     // this runs the loop on the next animation frame (~16ms)
     window.requestAnimationFrame(loop);
