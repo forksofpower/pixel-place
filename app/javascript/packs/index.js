@@ -1,3 +1,5 @@
+import Bitmap from '../bitmap';
+
 let dataArray;
 
 const COLORS = [
@@ -19,8 +21,22 @@ const COLORS = [
     0x00BFFFFF, // Lt.Blue
 ];
 
-const xOffset = 0;
-const yOffset = 0;
+
+// document.onkeydown = handleKeyPress;
+window.addEventListener('keydown', handleKeyDown);
+window.addEventListener('keyup', handleKeyUp);
+
+const ZOOM_MAX = 40;
+const ZOOM_MIN = 5;
+const center    = { x: 0, y: 0 }
+
+let zoom      = 10;
+let xOffset   = -2500;
+let yOffset   = -2500;
+
+// stores the x,y values of the current motion
+let motionVector = [0,0];
+let motionSpeed = 1;
 
 function resize(ctx) {
     ctx.width  = window.innerWidth;
@@ -37,12 +53,6 @@ function draw() {
     ctx.fill();
 }
 
-// function handleWindowResize() {
-//     let ctx = document.getElementById('place-canvas');
-//     resize(ctx);
-//     draw();
-// }
-
 const getPlaceData = async () => {
     const resp = await fetch('http://localhost:3000/bitmap');
     let buffer = await resp.arrayBuffer();
@@ -53,6 +63,70 @@ const getPlaceData = async () => {
     // console.log(colorData);
     let clamped = convertToUint8ClampedArray(colorData);
     return clamped;
+}
+
+// Movement functions
+function handleKeyDown(e) {
+    e.preventDefault();
+    // check type of keypress for ←↑→↓
+    switch (e.keyCode) {
+        case 87: // W
+            if (motionVector[1] < 1) motionVector[1] += 1
+            break;
+        case 65: // A
+            if (motionVector[0] < 1) motionVector[0] += 1
+            break;
+        case 83: // S
+            if (motionVector[1] > -1) motionVector[1] -= 1
+            break
+        case 68: // D
+            if (motionVector[0] > -1) motionVector[0] -= 1
+            break;
+        default:
+            break;
+    }
+}
+function handleKeyUp(e) {
+    e.preventDefault();
+    switch (e.keyCode) {
+        case 87: // W
+            if (motionVector[1] > -1) motionVector[1] -= 1
+            break;
+        case 65: // A
+            if (motionVector[0] > -1) motionVector[0] -= 1
+            break;
+        case 83: // S
+            if (motionVector[1] < 1) motionVector[1] += 1
+            break
+        case 68: // D
+            if (motionVector[0] < 1) motionVector[0] += 1
+            break;
+        default:
+            break;
+    }
+
+}
+
+
+
+function zoomIn(d=1) {
+    if (zoom < ZOOM_MAX && zoom >= ZOOM_MIN) {
+        let el = document.getElementById('place-inner');
+        zoom += d;
+        el.style.transform = `scale(${zoom}, ${zoom})`
+    }
+}
+
+function zoomOut(d=1) {
+    if (zoom <= ZOOM_MAX && zoom > ZOOM_MIN) {
+        zoom -= d;
+        setZoom(zoom);
+    }
+}
+
+function setZoom(z) {
+    let el = document.getElementById('place-inner');
+    el.style.transform = `scale(${zoom}, ${zoom})`
 }
 
 // BITWISE FUNCTIONS
@@ -118,31 +192,53 @@ function toBytesInt32 (num) {
     // resize(c);
     c.width  = 1000;
     c.height = 1000;
-    let container = document.getElementById('place');
+    let container = document.getElementById('place-inner');
 
     container.appendChild(c);
 
-    let data = await getPlaceData();
     let t = document.getElementById('place-canvas');
-    let ctx = t.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
+    let data = await getPlaceData();
 
-    // ctx.scale(1.5, 1.5)
+    
+    let ctx = t.getContext("2d");
+    disableSmoothing(ctx);
     ctx.putImageData(new ImageData(data, 1000, 1000), 0, 0);
-    // console.log(data);
+
+    runLoop();
 })();
 
+function disableSmoothing(ctx) {
+    ctx.imageSmoothingEnabled       = false;
+    ctx.webkitImageSmoothingEnabled = false;
+    ctx.mozImageSmoothingEnabled    = false;
+    ctx.msImageSmoothingEnabled     = false;
+    ctx.oImageSmoothingEnabled      = false;
+}
 
 
+function moveImage() {
+    let e = document.getElementById("place-outer");
 
-// function handleImageLoad(e) {
-//     function loop() {
-//         // check for changed data and redraw if necessary
-//         // if no updates, dont redraw
-//         draw();
+    if (motionVector[0] !== 0 || motionVector[1] !== 0) {
+        // movementSpeed = maxZoom / currentZoom * speedMultiplier
+        let xSpeed = motionVector[0] * motionSpeed;
+        let ySpeed = motionVector[1] * motionSpeed;
+        let zoomRatio = ZOOM_MAX / zoom;
 
-//         window.setTimeout(window.requestAnimationFrame(loop), 100);
-//     }
-//     // this runs the loop on the next animation frame (~16ms)
-//     window.requestAnimationFrame(loop);
-// }
+        xOffset += zoomRatio * xSpeed;
+        yOffset += zoomRatio * ySpeed;
+
+        e.style.transform = `translate(${xOffset}px, ${yOffset}px)`
+    }
+}
+
+function runLoop(e) {
+    function loop() {
+        // check for changed data and redraw if necessary
+        // if no updates, dont redraw
+        moveImage();
+        window.setTimeout(window.requestAnimationFrame(loop), 100);
+    }
+    // this runs the loop on the next animation frame (~16ms)
+    window.requestAnimationFrame(loop);
+}

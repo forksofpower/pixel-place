@@ -27,7 +27,6 @@ class Place
 
         offset = (x + (bitmap.height * y))
         # color is a number 0-15
-        # 
         # redis.bitfield('place', 'SET', 'u4', offset, color)
         redis.bitfield(
             bitmap.name,
