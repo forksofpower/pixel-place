@@ -1,81 +1,97 @@
-import Bitmap from '../bitmap';
+import { bitmap } from '../bitmap';
+import { 
+    // getPlaceData,
+    toggleBlur,
+    disableSmoothing
+} from '../helpers';
 
 let dataArray;
+let nextPoint = [0,0];
 
+
+// colors in ABGR!!!
 const COLORS = [
-    0x000000FF, // Black
-    0xA9A9A9FF, // DarkGray
-    0xD3D3D3FF, // LightGray
+    0xFF000000, // Black
+    0xFFA9A9A9, // DarkGray
+    0xFFD3D3D3, // LightGray
     0xFF0000FF, // Red
-    0xFFFF00FF, // Yellow
-    0xFFA500FF, // Orange
-    0x8B4513FF, // Brown
-    0xD2B48CFF, // Tan
-    0x008000FF, // Green
-    0x00FF00FF, // Lime Green
-    0x00FFFFFF, // Cyan
-    0x0000FFFF, // Blue
-    0x9400D3FF, // Purple
-    0xFF69B4FF, // Pink,
+    0xFF00FFFF, // Yellow
+    0xFF00A5FF, // Orange
+    0xFF13458B, // Brown
+    0xFF8CB4D2, // Tan
+    0xFF008000, // Green
+    0xFF00FF00, // Lime Green
+    0xFFFFFF00, // Cyan
+    0xFFFF0000, // Blue
+    0xFFD30094, // Purple
+    0xFFB469FF, // Pink,
     0xFFFFFFFF, // White
-    0x00BFFFFF, // Lt.Blue
+    0xFFFFBF00, // Lt.Blue
 ];
-
+let randColor = Math.floor(Math.random() * 15)
 
 // document.onkeydown = handleKeyPress;
 window.addEventListener('keydown', handleKeyDown);
 window.addEventListener('keyup', handleKeyUp);
 window.addEventListener('wheel', handleScrollWheel);
+window.addEventListener('place-queue-update', handleQueueUpdate);
+window.addEventListener('DOMContentLoaded', init);
 
 const ZOOM_MAX = 40;
 const ZOOM_MIN = 5;
-const ZOOM_SPEED = 0.5
-
-const center    = { x: 0, y: 0 }
+const ZOOM_SPEED = 0.25
 
 let zoom      = 10;
-let xOffset   = -2500;
+let xOffset   = -2500; // 1000px * zoom:5 / 2 = center of image
 let yOffset   = -2500;
+let center    = { x: 0, y: 0 }
 
 // stores the x,y values of the current motion
 let motionVector = [0,0];
 let motionSpeed = 1;
+
+// application state
+let blurred   = false;
 
 function resize(ctx) {
     ctx.width  = window.innerWidth;
     ctx.height = window.innerHeight;
 }
 
-function draw() {
-    let c = document.getElementById('place-canvas');
-    let ctx = c.getContext("2d");
+// function draw() {
+//     let c = document.getElementById('place-canvas');
+//     let ctx = c.getContext("2d");
 
-    ctx.beginPath();
-    ctx.rect(20, 20, 150, 100);
-    ctx.fillStyle = "red";
-    ctx.fill();
+//     ctx.beginPath();
+//     ctx.rect(20, 20, 150, 100);
+//     ctx.fillStyle = "red";
+//     ctx.fill();
+// }
+
+// Movement functions
+function handleQueueUpdate(e) {
+    let el = document.getElementById('place-canvas');
+    bitmap.queueUpdate(e.detail.message);
+}
+function handleScrollWheel(e) {
+    // e.preventDefault();
+    let deltaY = e.deltaY;
+    if (deltaY > 0) zoomOut(ZOOM_SPEED);
+    else if(deltaY < 0) zoomIn(ZOOM_SPEED);
 }
 
 const getPlaceData = async () => {
     const resp = await fetch('http://localhost:3000/bitmap');
     let buffer = await resp.arrayBuffer();
-
-    let packed = new Uint8Array(buffer);
-    let unpacked = unpack(packed);
-    let colorData = assign32BitColors(unpacked);
-    // console.log(colorData);
-    let clamped = convertToUint8ClampedArray(colorData);
-    return clamped;
+    // let packed = new Uint8Array(buffer);
+    // let unpacked = unpack(packed);
+    // let colorData = assign32BitColors(unpacked);
+    
+    // // console.log(colorData);
+    // let clamped = convertToUint8ClampedArray(colorData);
+    return buffer;
 }
 
-// Movement functions
-function handleScrollWheel(e) {
-    // e.preventDefault();
-    let deltaY = e.deltaY;
-    console.log(e.deltaY);
-    if (deltaY > 0) zoomOut(ZOOM_SPEED);
-    else if(deltaY < 0) zoomIn(ZOOM_SPEED);
-}
 function handleKeyDown(e) {
     e.preventDefault();
     // check type of keypress for ←↑→↓
@@ -116,8 +132,6 @@ function handleKeyUp(e) {
     }
 
 }
-
-
 
 function zoomIn(delta=1) {
     if (zoom < ZOOM_MAX && zoom >= ZOOM_MIN) {
@@ -189,46 +203,53 @@ function toBytesInt32 (num) {
 }
 
 
-(async function init() {
-    // load initial bitmap state
-    // GET /bitmap
-    let c = document.createElement('canvas');
-    c.id = 'place-canvas'
-    c.addEventListener('click', (e) => {
-        console.log(e)
-    });
-    // resize(c);
-    c.width  = 1000;
-    c.height = 1000;
-    let container = document.getElementById('place-inner');
+function setupCanvas(width, height) {
+    let canvas = document.createElement('canvas');
+    canvas.id = 'place-canvas'
 
-    container.appendChild(c);
+    canvas.width  = width;
+    canvas.height = height;
+    document.getElementById('place-inner').appendChild(canvas);
 
-    //
-    let t = document.getElementById('place-canvas');
-    let data = await getPlaceData();
-
-    // display image on canvas
-    let ctx = t.getContext("2d");
-    disableSmoothing(ctx);
-    ctx.putImageData(new ImageData(data, 1000, 1000), 0, 0);
-
-    runLoop();
-})();
-
-function disableSmoothing(ctx) {
-    ctx.imageSmoothingEnabled       = false;
-    ctx.webkitImageSmoothingEnabled = false;
-    ctx.mozImageSmoothingEnabled    = false;
-    ctx.msImageSmoothingEnabled     = false;
-    ctx.oImageSmoothingEnabled      = false;
+    return canvas;
 }
 
+async function init() {
+    let canvas = setupCanvas(1000, 1000);
 
-function moveImage() {
-    let e = document.getElementById("place-outer");
+    bitmap.data = await getPlaceData();
 
+    // display image on canvas
+    let ctx = canvas.getContext("2d");
+    disableSmoothing(ctx);
+    console.log(bitmap.Uint8ClampedData);
+    ctx.putImageData(new ImageData(bitmap.Uint8ClampedData, 1000, 1000), 0, 0);
+
+    // start the loop!
+    runLoop(ctx);
+
+    // test the updates
+    setInterval(paintPixels, 2000); 
+}
+function paintPixels() {
+    let [x, y] = nextPoint;
+    fetch(`http://localhost:3000/paints/${x}/${y}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ color: randColor })
+    })
+    nextPoint[0]++;
+}
+
+function move() {
+    let panContainer = document.getElementById("place-outer");
+
+    // check if vector has direction
     if (motionVector[0] !== 0 || motionVector[1] !== 0) {
+        // slow movement when zoomed out to prevent user from vomiting
         // movementSpeed = maxZoom / currentZoom * speedMultiplier
         let xSpeed = motionVector[0] * motionSpeed;
         let ySpeed = motionVector[1] * motionSpeed;
@@ -237,22 +258,35 @@ function moveImage() {
         let xDelta = zoomRatio * xSpeed;
         let yDelta = zoomRatio * ySpeed;
 
-        console.log(xOffset, Math.abs(xDelta));
+        // contrain Left & Up
         if (xOffset <= (0 - xDelta + 100)) xOffset += xDelta;
         if (yOffset <= (0 - yDelta + 100)) yOffset += yDelta;
 
-        // if (xOffset <= (0 - xDelta) && xOffset > (-5000 + window.innerWidth + Math.abs(xDelta)) ) xOffset += xDelta;
-        // if (yOffset <= (0 - yDelta) && yOffset > (-5000 + window.innerHeight + Math.abs(yDelta)) ) yOffset += yDelta;
-        e.style.transform = `translate(${xOffset}px, ${yOffset}px)`
+        // contrain Right & Down
+        if (xOffset < (-5000 + window.innerWidth - 100)) xOffset = (-5000 + window.innerWidth - 100)
+        if (yOffset < (-5000 + window.innerHeight - 100)) yOffset = (-5000 + window.innerHeight - 100)
+
+        // do transformation
+        panContainer.style.transform = `translate(${xOffset}px, ${yOffset}px)`
     }
 }
 
-function runLoop(e) {
+function runLoop(ctx) {
     function loop() {
-        // check for changed data and redraw if necessary
-        // if no updates, dont redraw
-        moveImage();
-        window.setTimeout(window.requestAnimationFrame(loop), 30);
+        // update position
+        move();
+        // check for new paints and update bitmap
+        if (bitmap.updateQueue.length > 0) {
+            let updates = bitmap.getUpdatesAndClear();
+
+            // loop through updates
+            updates.forEach( ({x, y, c: color}) => {
+                bitmap.paintPixel(x, y, color);
+            });
+            ctx.putImageData(new ImageData(bitmap.Uint8ClampedData, 1000, 1000), 0, 0);
+        }
+        // schedule loop to run again
+        window.setTimeout(window.requestAnimationFrame(loop), 50);
     }
     // this runs the loop on the next animation frame (~16ms)
     window.requestAnimationFrame(loop);
