@@ -5,18 +5,6 @@ body {
     overflow: hidden;
 }
 
-// .place-blur {
-//     filter: blur(0.2px);
-//     -webkit-filter: blur(0.2px); -moz-filter: blur(0.2px);
-//     -o-filter: blur(0.2px); -ms-filter: blur(0.2px);
-
-//     transition: 1s filter linear;
-//     -webkit-transition: 1s -webkit-filter linear;
-//     -moz-transition: 1s -moz-filter linear;
-//     -ms-transition: 1s -ms-filter linear;
-//     -o-transition: 1s -o-filter linear;
-// }
-
 #place-inner {
     transform: scale(10, 10); // zoom
     transform-origin: top left;
@@ -36,13 +24,13 @@ body {
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     // same size as pixels so the border scales with the image
-    // border: solid 0.25px black;
+    border: solid thin black;
     // this fits the canvas to the parent element
     // display: block;
 
     // enable blur transition?
-    -webkit-filter: blur(0.2px); -moz-filter: blur(0.2px);
-    -o-filter: blur(0.2px); -ms-filter: blur(0.2px);
+    -webkit-filter: blur(0.5px); -moz-filter: blur(0.5px);
+    -o-filter: blur(0.5px); -ms-filter: blur(0.5px);
 
     transition: 1s filter linear;
     -webkit-transition: 1s -webkit-filter linear;
@@ -51,6 +39,36 @@ body {
     -o-transition: 1s -o-filter linear;
     z-index: 0;
     cursor: pointer;
+}
+
+.color-picker-box {
+    position: fixed;
+    display: block;
+    background-color: white;
+    filter: drop-shadow(0 0 1rem darkgray);
+    
+    height: 400px;
+    top: 50vh;
+    margin-top: -200px;
+    
+    width: 400px;
+    left: 50vw;
+    margin-left: -200px;
+
+    z-index: 9998;
+    .color-picker-list {
+        padding: 50px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        grid-gap: 1rem;
+
+        .color-picker-item {
+            min-height: 60px;
+            min-width: 60px;
+            border-radius: 0.5rem;
+            filter: drop-shadow(0 0 0.25rem grey);
+        }
+    }
 }
 
 #color-picker-toggle {
@@ -62,14 +80,9 @@ body {
     bottom: 20px; right: 20px;
     border-radius: 25px;
     margin: 10px;
-    background-color: red;
-    // border: 2px solid black;
+
+    filter: drop-shadow(0 0 1rem darkgray);
     
     z-index: 9999;
-    font-weight: bolder;
-
-    // -moz-box-shadow:    inset 0 0 8px #000000;
-    // -webkit-box-shadow: inset 0 0 8px #000000;
-    // box-shadow:         inset 0 0 8px #000000;
 }
 #color-picker-toggle:focus {outline:0;}

@@ -4,7 +4,8 @@ import {
     setupCanvas,
     getData,
     keyDownToVector,
-    keyUpToVector
+    keyUpToVector,
+    RGBAToHexA
 } from '../helpers';
 
 // TEST DATA
@@ -13,6 +14,43 @@ let nextPoint = [0,0];
 let movementBorder = 50;
 // /TEST DATA
 
+// colors
+const COLORS = [
+    0xFF000000, // 0 - Black
+    0xFFA9A9A9, // 1 - DarkGray
+    0xFFD3D3D3, // 2 - LightGray
+    0xFF0000FF, // 3 - Red
+    0xFF00FFFF, // 4 - Yellow
+    0xFF00A5FF, // 5 - Orange
+    0xFF13458B, // 6 - Brown
+    0xFF8CB4D2, // 7 - Tan
+    0xFF008000, // 8 - Green
+    0xFF00FF00, // 9 - Lime Green
+    0xFFFFFF00, // 10 - Cyan
+    0xFFFF0000, // 11 - Blue
+    0xFFD30094, // 12 - Purple
+    0xFFB469FF, // 13 - Pink,
+    0xFFFFBF00, // 14 - Lt.Blue
+    0xFFFFFFFF, // 15 - White
+];
+const RBGACOLORS = [
+    0x000000FF, // 0 - Black
+    0xA9A9A9FF, // 1 - DarkGray
+    0xD3D3D3FF, // 2 - LightGray
+    0xFF0000FF, // 3 - Red
+    0xFFFF00FF, // 4 - Yellow
+    0xFFA500FF, // 5 - Orange
+    0x8B4513FF, // 6 - Brown
+    0xD2B48CFF, // 7 - Tan
+    0x008000FF, // 8 - Green
+    0x00FF00FF, // 9 - Lime Green
+    0x00FFFFFF, // 10 - Cyan
+    0x0000FFFF, // 11 - Blue
+    0x9400D3FF, // 12 - Purple
+    0xFF69B4FF, // 13 - Pink,
+    0x00BFFFFF, // 14 - Lt.Blue
+    0xFFFFFFFF, // 15 - White
+];
 // Values for tracking the current position
 const ZOOM_MAX = 40;
 const ZOOM_MIN = 10;
@@ -29,7 +67,7 @@ let motionSpeed = 2;
 // application state
 let blurred   = true;
 let displayMenu = true;
-let userColor = 15;
+let userColor = 0;
 let disableControls = true;
 let buttonShadow = true;
 
@@ -89,37 +127,35 @@ function handlePaintClick(event) {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ color: Math.floor(Math.random() * 15) })
+            body: JSON.stringify({ color: userColor })
         })
     }
 }
 
 function handleMenuToggle(event) {
     let canvas = document.getElementById('place-canvas');
+    let el = document.querySelector('.color-picker-box');
     if (displayMenu) {
         toggleBlur(canvas);
-        // toggleShadow(event.target);
+        el.style.display = 'none';
         displayMenu = false;
         disableControls = false;
-        // canvas.style.display = "block"
-
     } else {
-        toggleBlur(event.target);
-        // toggleShadow(event.target);
+        toggleBlur(canvas);
+        el.style.display = 'block';
         displayMenu = true;
         disableControls = true;
-        // canvas.style.display = 'none'
     }
 }
 
 function toggleBlur(el) {
     if (blurred) {
-        el.style.filter = "blur(0.0px)";
         el.style.webkitFilter = "blur(0.0px)";
+        el.style.filter = "blur(0.0px)";
         blurred = false
     } else {
-        el.style.filter = "blur(0.2px)";
-        el.style.webkitFilter = "blur(0.2px)";
+        el.style.webkitFilter = "blur(0.5px)";
+        el.style.filter = "blur(0.5px)";
         blurred = true;
     }
 }
@@ -148,7 +184,7 @@ function setZoom(z) {
     zoom = z;
 }
 
-function paintPixels() {
+function handleAutoPaintPixels() {
     let [x, y] = nextPoint;
     fetch(`http://localhost:3000/paints/${x}/${y}`, {
         method: 'POST',
@@ -170,6 +206,49 @@ function drawControls(ctx) {
     ctx.arc(100, 75, 50, 0, 2 * Math.PI);
     ctx.stroke();
     ctx.fillStyle = 'red';
+}
+
+function handleChangeColor(event) {
+    let code = parseInt(event.target.dataset.color);
+    let el = document.querySelector('.color-picker-box');
+    setUserColor(code);
+    el.style.display = 'none';
+}
+
+function setUserColor(code) {
+    let button = document.getElementById('color-picker-toggle');
+    userColor = code;
+    // update color-picker-button
+    button.style.backgroundColor = RGBAToHexA(COLORS[code]);
+    let canvas = document.getElementById('place-canvas');
+    if (displayMenu) {
+        toggleBlur(canvas);
+        displayMenu = false;
+        disableControls = false;
+    } else {
+        toggleBlur(canvas);
+        displayMenu = true;
+        disableControls = true;
+    }
+}
+
+function createColorPicker() {
+    let container = document.querySelector('.color-picker-list');
+
+    COLORS.forEach( (color, index) => {
+        let colorBox = document.createElement('div');
+
+        let hex = RGBAToHexA(color);
+        console.log(hex);
+
+        colorBox.dataset.color = index;
+        colorBox.className = "color-picker-item";
+        // console.log(`#${color.toString(16)}`)
+        colorBox.style.backgroundColor = hex;
+
+        colorBox.addEventListener('click', handleChangeColor);
+        container.appendChild(colorBox);
+    });
 }
 
 function move() {
@@ -227,6 +306,7 @@ function getPixelCoordinates(event) {
 }
 
 async function init() {
+    createColorPicker();
     let canvas = setupCanvas(1000, 1000);
 
     bitmap.data = await getData('http://localhost:3000/bitmap');

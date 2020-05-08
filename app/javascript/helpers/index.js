@@ -62,6 +62,29 @@ function keyUpToVector(key, motionVector) {
     }
     return motionVector
 }
+function RGBAToHexA(color) {
+    let arr = new Uint8ClampedArray([
+        (color & 0x000000ff),
+        (color & 0x0000ff00) >> 8,
+        (color & 0x00ff0000) >> 16,
+        (color & 0xff000000) >> 24
+    ]);
+    let r = arr[0].toString(16);
+    let g = arr[1].toString(16);
+    let b = arr[2].toString(16);
+    let a = arr[3].toString(16);
+  
+    if (r.length == 1)
+      r = "0" + r;
+    if (g.length == 1)
+      g = "0" + g;
+    if (b.length == 1)
+      b = "0" + b;
+    if (a.length == 1)
+      a = "0" + a;
+  
+    return "#" + r + g + b + "ff";
+  }
 
 
 export {
@@ -69,5 +92,6 @@ export {
     setupCanvas,
     getData,
     keyDownToVector,
-    keyUpToVector
+    keyUpToVector,
+    RGBAToHexA
 }
