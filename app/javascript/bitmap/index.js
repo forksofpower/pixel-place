@@ -1,52 +1,3 @@
-class Bitmap {
-    constructor() {
-        this._updateQueue = [];
-        this._dataBuffer = null;
-        this._colorData = null;
-        this._clampedColorData = null;
-        this._data = null;
-    }
-
-    set data(buffer) {
-        let packed = new Uint8Array(buffer);
-        let unpacked = unpack(packed);
-        this._colorData = new Uint32Array(unpacked.map(x => COLORS[x]));
-        console.log(this._colorData);
-        this._dataBuffer = this._colorData.buffer;
-        this._clampedColorData = new Uint8ClampedArray(this._dataBuffer);
-    }
-
-    get data() {
-        return this._data;
-    }
-    queueUpdate(data) {
-        this._updateQueue.push(data);
-    }
-
-    get Uint8ClampedData() {
-        return this._clampedColorData;
-    }
-
-    get updateQueue() {
-        return this._updateQueue;
-    }
-
-    getUpdatesAndClear() {
-        let updates = [...this._updateQueue];
-        this._updateQueue = [];
-
-        return updates;
-    }
-
-    paintPixel(x, y, color) {
-        // set data in the Uint32Array
-        let offset = (x + 1000 * y)
-        this._colorData[offset] = COLORS[color];
-    }
-}
-
-export let bitmap = new Bitmap();
-
 const COLORS = [
     0xFF000000, // 0 - Black
     0xFFA9A9A9, // 1 - DarkGray
@@ -66,53 +17,98 @@ const COLORS = [
     0xFFFFFFFF, // 15 - White
 ];
 
-// BITWISE FUNCTIONS
-function splitLow4Bits(num) {
-    return (num & parseInt('00001111', 2))
-}
+class Bitmap {
+    constructor() {
+        this._updateQueue = [];
+        this._dataBuffer = null;
+        this._colorData = null;
+        this._clampedColorData = null;
+    }
 
-function splitHigh4Bits(num) {
-    return (num & parseInt('11110000', 2)) >> 4
-}
+    set data(buffer) {
+        let packed = new Uint8Array(buffer);
+        let unpacked = unpack(packed);
+        this._colorData = new Uint32Array(unpacked.map(x => COLORS[x]));
+        this._dataBuffer = this._colorData.buffer;
+        this._clampedColorData = new Uint8ClampedArray(this._dataBuffer);
+    }
 
+    get Uint8ClampedData() {
+        return this._clampedColorData;
+    }
+
+    get updateQueue() {
+        return this._updateQueue;
+    }
+
+    queueUpdate(data) {
+        this._updateQueue.push(data);
+    }
+
+    getUpdatesAndClear() {
+        let updates = [...this._updateQueue];
+        this._updateQueue = [];
+
+        return updates;
+    }
+
+    paintPixel(x, y, color) {
+        // set data in the Uint32Array
+        let offset = (x + 1000 * y)
+        this._colorData[offset] = COLORS[color];
+    }
+    
+}
+function expand(num) {
+    return [(num & 0xf0) >> 4, (num & 0x0f)]
+}
 function unpack(array) {
     let unpacked = [];
+
     for (let i = 0; i < array.length; i++) {
-        let num = array[i];
-        let high = splitHigh4Bits(num);
-        unpacked.push(high);
-        let low = splitLow4Bits(num);
-        unpacked.push(low);
+        let codes = expand(array[i]);
+        unpacked.push(...codes);
     }
+
     return unpacked;
 }
 
-function assign32BitColors(array) {
-    return new Uint32Array(array.map(x => COLORS[x]))
-}
+export let bitmap = new Bitmap();
 
-function convertToUint8ClampedArray(array) {
-    // first order - 255
-    // second order - 65280
-    // third order - 16711680
+// BITWISE FUNCTIONS
+// NO LONGER NEEDED
+// function splitLow4Bits(num) {
+//     return (num & parseInt('00001111', 2))
+// }
 
-    let test = array.reduce((arr, num) => {
-        let bytes = toBytesInt32(num);
-        arr.push(bytes[0])
-        arr.push(bytes[1])
-        arr.push(bytes[2])
-        arr.push(bytes[3])
-        return arr;
-    }, []);
+// function splitHigh4Bits(num) {
+//     return (num & parseInt('11110000', 2)) >> 4
+// }
 
-    return new Uint8ClampedArray(test)
-}
-function toBytesInt32 (num) {
-    let arr = new Uint8Array([
-         (num & 0xff000000) >> 24,
-         (num & 0x00ff0000) >> 16,
-         (num & 0x0000ff00) >> 8,
-         (num & 0x000000ff)
-    ]);
-    return arr;
-}
+// All this is no longer needed because of
+//   the magic of ArrayBuffer and TypedArrays
+//
+// function assign32BitColors(array) {
+//     return new Uint32Array(array.map(x => COLORS[x]))
+// }
+// function convertToUint8ClampedArray(array) {
+//     let test = array.reduce((arr, num) => {
+//         let bytes = toBytesInt32(num);
+//         arr.push(bytes[0])
+//         arr.push(bytes[1])
+//         arr.push(bytes[2])
+//         arr.push(bytes[3])
+//         return arr;
+//     }, []);
+//     return new Uint8ClampedArray(test)
+// }
+// // split 32bits into 4 x 8bits
+// function toBytesInt32 (num) {
+//     let arr = new Uint8Array([
+//          (num & 0xff000000) >> 24,
+//          (num & 0x00ff0000) >> 16,
+//          (num & 0x0000ff00) >> 8,
+//          (num & 0x000000ff)
+//     ]);
+//     return arr;
+// }

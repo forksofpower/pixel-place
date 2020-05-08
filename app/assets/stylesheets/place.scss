@@ -29,21 +29,47 @@ body {
 }
 
 #place-canvas {
+    // display: none;
+    position: relative;
+    // margin: 1px;
     // force disable image smoothing
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     // same size as pixels so the border scales with the image
-    border: solid 1px black;
+    // border: solid 0.25px black;
     // this fits the canvas to the parent element
-    display: block;
+    // display: block;
 
     // enable blur transition?
-    -webkit-filter: blur(0px); -moz-filter: blur(0px);
-    -o-filter: blur(0px); -ms-filter: blur(0px);
+    -webkit-filter: blur(0.2px); -moz-filter: blur(0.2px);
+    -o-filter: blur(0.2px); -ms-filter: blur(0.2px);
 
     transition: 1s filter linear;
     -webkit-transition: 1s -webkit-filter linear;
     -moz-transition: 1s -moz-filter linear;
     -ms-transition: 1s -ms-filter linear;
     -o-transition: 1s -o-filter linear;
+    z-index: 0;
+    cursor: pointer;
 }
+
+#color-picker-toggle {
+    position: fixed;
+    min-height: 50px;
+    min-width: 50px;
+    height: 50px;
+    width: 50px;
+    bottom: 20px; right: 20px;
+    border-radius: 25px;
+    margin: 10px;
+    background-color: red;
+    // border: 2px solid black;
+    
+    z-index: 9999;
+    font-weight: bolder;
+
+    // -moz-box-shadow:    inset 0 0 8px #000000;
+    // -webkit-box-shadow: inset 0 0 8px #000000;
+    // box-shadow:         inset 0 0 8px #000000;
+}
+#color-picker-toggle:focus {outline:0;}

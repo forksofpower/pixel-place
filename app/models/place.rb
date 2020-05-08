@@ -1,11 +1,11 @@
 class Place
     attr_accessor :BITMAP_NAME, :BITMAP_HEIGHT, :BITMAP_WIDTH, :BACKGROUND_COLOR, :BIT_WIDTH
 
-    def self.create(name: 'place', height: 500, width: 500)
+    def self.create(name: 'place', height: 500, width: 500, background_color: 0xf)
         @BITMAP_NAME = name
         @BITMAP_HEIGHT = height
         @BITMAP_WIDTH = width
-        @BACKGROUND_COLOR = 0xf
+        @BACKGROUND_COLOR = background_color
         @BIT_WIDTH = 'u4'
 
         puts "✈️  Generating a bunch of pixels..."
@@ -56,8 +56,8 @@ class Place
                     @BIT_WIDTH,
                     # (x + width * y)
                     "##{(x + (@BITMAP_HEIGHT * y))}",
-                    # @BACKGROUND_COLOR
-                    rand(0..15)
+                    @BACKGROUND_COLOR
+                    # rand(0..15)
                     # create some fancy stripes to test
                     # (y % 10 === 0) ? @BACKGROUND_COLOR : rand(0..15)
                 )

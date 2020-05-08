@@ -6,7 +6,7 @@ def random_color(code="hex")
 	# if hex, take into account zero padding
 	if code === "rgb"
 		color = rgb
-	else 
+	else
 		color = rgb.reduce("#"){|x, y| x + ((y<=16) ? "0" : "") + y.to_s(16)}
 	end
 	color
