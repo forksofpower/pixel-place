@@ -20,6 +20,7 @@ user = User.create({
     email: "patrickjones.pmj@gmail.com"
 })
 
+binding.pry
 # generate random paints
 # points = Array.new(10000) do
 #     [rand(-100..100), rand(-100..100)]

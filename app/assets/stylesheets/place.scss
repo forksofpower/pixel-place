@@ -5,6 +5,18 @@ body {
     overflow: hidden;
 }
 
+// .place-blur {
+//     filter: blur(0.2px);
+//     -webkit-filter: blur(0.2px); -moz-filter: blur(0.2px);
+//     -o-filter: blur(0.2px); -ms-filter: blur(0.2px);
+
+//     transition: 1s filter linear;
+//     -webkit-transition: 1s -webkit-filter linear;
+//     -moz-transition: 1s -moz-filter linear;
+//     -ms-transition: 1s -ms-filter linear;
+//     -o-transition: 1s -o-filter linear;
+// }
+
 #place-inner {
     transform: scale(10, 10); // zoom
     transform-origin: top left;
@@ -21,7 +33,17 @@ body {
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     // same size as pixels so the border scales with the image
-    // border: solid 1px white;
+    border: solid 1px black;
     // this fits the canvas to the parent element
     display: block;
+
+    // enable blur transition?
+    -webkit-filter: blur(0px); -moz-filter: blur(0px);
+    -o-filter: blur(0px); -ms-filter: blur(0px);
+
+    transition: 1s filter linear;
+    -webkit-transition: 1s -webkit-filter linear;
+    -moz-transition: 1s -moz-filter linear;
+    -ms-transition: 1s -ms-filter linear;
+    -o-transition: 1s -o-filter linear;
 }
