@@ -24,7 +24,7 @@ body {
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     // same size as pixels so the border scales with the image
-    border: solid thin black;
+    border: solid thin lightgray;
     // this fits the canvas to the parent element
     // display: block;
 
