@@ -296,12 +296,6 @@ Client:
 - [ ] subscribe to pixel updates via websocket
 - [ ] color picker
 
-
-
-### _A few lingering questions_:
-- Is postgresql + ActiveRecord an acceptable alternative to store Pixel data or does Cassandra offer some sort of performance gain in using `(x,y)` as the key?
-- Figure out simple caching of some sort to relieve strain on initial download.
-
-## Show me the pixels!
-Not so fast buddy.
-
+## Postgresql vs CassandraDB
+You should explain why you chose Postgres:
+- easier setup: cassandra requires a robust server setup while postgres only needs a single server.
