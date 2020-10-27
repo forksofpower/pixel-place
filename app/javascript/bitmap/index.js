@@ -26,6 +26,7 @@ class Bitmap {
     }
 
     set data(buffer) {
+        console.log(buffer)
         let packed = new Uint8Array(buffer);
         let unpacked = unpack(packed);
         this._colorData = new Uint32Array(unpacked.map(x => COLORS[x]));
