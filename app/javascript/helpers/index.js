@@ -1,7 +1,7 @@
 function disableSmoothing(ctx) {
     ctx.imageSmoothingEnabled       = false;
     ctx.webkitImageSmoothingEnabled = false;
-    ctx.mozImageSmoothingEnabled    = false;
+    // ctx.mozImageSmoothingEnabled    = false;
     ctx.msImageSmoothingEnabled     = false;
     ctx.oImageSmoothingEnabled      = false;
 }
@@ -62,6 +62,26 @@ function keyUpToVector(key, motionVector) {
     }
     return motionVector
 }
+function rgbToHex(r, g, b, a) {
+    if (r > 255 || g > 255 || b > 255 || a > 255) throw "Invalid Color Data"
+    console.log(r, g, b, a)
+    r = r.toString(16);
+    g = g.toString(16);
+    b = b.toString(16);
+    a = a.toString(16);
+  
+    if (r.length == 1)
+      r = "0" + r;
+    if (g.length == 1)
+      g = "0" + g;
+    if (b.length == 1)
+      b = "0" + b;
+    if (a.length == 1)
+      a = "0" + a;
+  
+    return "#" + r + g + b + "ff";
+    // return ((r << 24) | (g << 16) | (b << 8) | a ).toString(16)
+}
 function RGBAToHexA(color) {
     let arr = new Uint8ClampedArray([
         (color & 0x000000ff),
@@ -93,5 +113,6 @@ export {
     getData,
     keyDownToVector,
     keyUpToVector,
-    RGBAToHexA
+    RGBAToHexA,
+    rgbToHex
 }

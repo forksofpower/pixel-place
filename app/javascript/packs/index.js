@@ -5,7 +5,8 @@ import {
     getData,
     keyDownToVector,
     keyUpToVector,
-    RGBAToHexA
+    RGBAToHexA,
+    rgbToHex
 } from '../helpers';
 
 // TEST DATA
@@ -118,9 +119,13 @@ function handleKeyUp(e) {
     }
 }
 
-function handlePaintClick(event) {
+async function handlePaintClick(event) {
     if (!disableControls) {
-        let [x, y] = getPixelCoordinates(event);
+        // get current pixel position and color
+        let [x, y, color] = getPixelData(event);
+        // paint the pixel first
+        bitmap.paintPixel(x, y, userColor)
+        // update the server
         fetch(`/paints/${x}/${y}`, {
             method: 'POST',
             headers: {
@@ -128,6 +133,10 @@ function handlePaintClick(event) {
                 'Accept': 'application/json'
             },
             body: JSON.stringify({ color: userColor })
+        }).catch((error) => {
+            // something went wrong
+            // reset the pixel color
+            bitmap.paintPixel(x, y, color)
         })
     }
 }
@@ -239,7 +248,6 @@ function createColorPicker() {
         let colorBox = document.createElement('div');
 
         let hex = RGBAToHexA(color);
-        console.log(hex);
 
         colorBox.dataset.color = index;
         colorBox.className = "color-picker-item";
@@ -301,8 +309,14 @@ function runLoop(ctx) {
     window.requestAnimationFrame(loop);
 }
 
-function getPixelCoordinates(event) {
-    return [event.offsetX - 1, event.offsetY - 1]
+function getPixelData(event) {
+    let ctx = document.getElementById('place-canvas').getContext("2d")
+    let x = event.offsetX - 1
+    let y = event.offsetY - 1
+    let color = ctx.getImageData(x, y, 1, 1).data
+    console.log(color)
+    let hex = "#" + ("00000000" + rgbToHex(...color)).slice(-8)
+    return [x, y, color]
 }
 
 async function init() {

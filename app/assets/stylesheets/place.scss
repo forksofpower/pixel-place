@@ -39,6 +39,9 @@ body {
     -o-transition: 1s -o-filter linear;
     z-index: 0;
     cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
 }
 
 .color-picker-box {
