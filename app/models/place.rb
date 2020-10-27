@@ -14,7 +14,7 @@ class Place
     end
 
     def self.to_binary
-        redis = Redis.new
+        redis = $redis
         redis.get 'place'
     end
 
@@ -23,7 +23,7 @@ class Place
 
         return false if !bitmap
         # connect to redis
-        redis = Redis.new
+        redis = $redis
 
         offset = (x + (bitmap.height * y))
         # color is a number 0-15
@@ -45,7 +45,7 @@ class Place
             byte_width: @BIT_WIDTH,
             background_color: @BACKGROUND_COLOR
         })
-        redis = Redis.new
+        redis = $redis
         # this could take a while. Do not call from a request
         # nested arrays are probably not necessary
         @BITMAP_HEIGHT.times do |y|
