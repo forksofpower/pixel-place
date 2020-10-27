@@ -45,3 +45,5 @@ gem "pry", "~> 0.13.1"
 gem "redis", "~> 4.1"
 
 gem "devise", "~> 4.7"
+
+gem "connection_pool", "~> 2.2"
