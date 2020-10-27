@@ -81,15 +81,6 @@ window.addEventListener('wheel', handleScrollWheel);
 window.addEventListener('place-queue-update', handleQueueUpdate);
 window.addEventListener('DOMContentLoaded', init);
 
-// function handleClick(e) {
-//     console.log('click', e);
-// }
-
-// function handleDblClick(e) {
-//     // console.log('double click', e);
-//     let el = document.getElementById('place-canvas');
-// }
-
 function handleQueueUpdate(e) {
     let canvas = document.getElementById('place-canvas');
     // let ctx = canvas.getContext("2d");
@@ -314,7 +305,6 @@ function getPixelData(event) {
     let x = event.offsetX - 1
     let y = event.offsetY - 1
     let color = ctx.getImageData(x, y, 1, 1).data
-    console.log(color)
     let hex = "#" + ("00000000" + rgbToHex(...color)).slice(-8)
     return [x, y, color]
 }
