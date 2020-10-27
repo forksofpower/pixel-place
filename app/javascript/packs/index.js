@@ -242,7 +242,6 @@ function createColorPicker() {
 
         colorBox.dataset.color = index;
         colorBox.className = "color-picker-item";
-        // console.log(`#${color.toString(16)}`)
         colorBox.style.backgroundColor = hex;
 
         colorBox.addEventListener('click', handleChangeColor);
