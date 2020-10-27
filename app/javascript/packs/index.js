@@ -121,7 +121,7 @@ function handleKeyUp(e) {
 function handlePaintClick(event) {
     if (!disableControls) {
         let [x, y] = getPixelCoordinates(event);
-        fetch(`http://localhost:3000/paints/${x}/${y}`, {
+        fetch(`/paints/${x}/${y}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -186,7 +186,7 @@ function setZoom(z) {
 
 function handleAutoPaintPixels() {
     let [x, y] = nextPoint;
-    fetch(`http://localhost:3000/paints/${x}/${y}`, {
+    fetch(`/paints/${x}/${y}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -309,7 +309,7 @@ async function init() {
     createColorPicker();
     let canvas = setupCanvas(1000, 1000);
 
-    bitmap.data = await getData('http://localhost:3000/bitmap');
+    bitmap.data = await getData('/bitmap');
 
     // display image on canvas
     let ctx = canvas.getContext("2d");
